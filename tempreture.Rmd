@@ -1,0 +1,221 @@
+---
+title: '  visualising data in R '
+author: "Feda Almuhisen"
+date: "2 -Dec-2020"
+output:
+  html_notebook:
+    number_sections: yes
+  pdf_document: default
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+Lire les donnéés dans un format différent: 
+Attention: n'oubliez pas de mettre les données dans le répertoire de travail.
+
+```{r}
+getwd()
+```
+
+
+```{r}
+
+library(readxl)
+temp1 <- read.table("HadSST.3.1.1.0_annual_globe_ts.txt")
+temp2 <- read.csv(file = "HadSST.3.1.1.0_annual_globe_ts.csv")
+temp3 <- read_excel("HadSST.3.1.1.0_annual_globe_ts.xlsx")
+```
+
+Supprimer un ensemble de data.frames de l'environnement de travail: 
+
+```{r}
+
+rm(temp1, temp2, temp3)
+
+```
+
+
+
+```{r}
+library(DT)
+data <- read.table(file = "HadSST.3.1.1.0_annual_globe_ts.txt")
+
+```
+
+
+Exploration des données
+```{r}
+
+
+head(data)
+tail(data)
+head(data, n = 20)
+tail(data, n = 50)
+
+str(data)
+class(data)
+dim(data)
+nrow(data)
+ncol(data)
+summary(data)
+library(psych)
+describe(data)
+library(dplyr)
+glimpse(data)
+names(data)
+```
+
+Rename columns
+
+```{r}
+names(data) <- c("Year", "Median")
+head(data)
+data[3:12] <- NULL
+#View(data)
+
+
+```
+
+filter and subset data 
+```{r}
+subdata <- subset(data, Year >= 1900)
+#View(subdata)
+subdata2 <- subset(data, Year >= 1900 & Year <= 1999)
+#View(subdata2)
+#Or the can use the dplyr package as well (creating another file with data from 1900
+#to 1999 using the row numbers):
+library(dplyr)
+subdata3 <- data[51:150, ]
+```
+
+
+```{r}
+plot(data)
+```
+
+
+Improve this plot by adding axis labels xlab() , ylab() 
+
+
+```{r}
+plot(data,
+ylab = " Median sea/surface temperature anomaly (relative to 1961-1990)",
+xlab = "Year",
+type = "o",
+col = "blue")
+```
+
+
+Add titles:
+```{r}
+plot(data,
+ylab = " Median sea/surface temperature anomaly (relative to 1961-1990)",
+xlab = "Year",
+type = "o",
+col = "blue")
+xlim = c(1850, 2018)
+ylim = c(-0.6, 0.6)
+axis(side = 1, at = c(1850, 1875, 1900, 1925, 1950, 1975, 2000, 2018))
+title("Global Sea Surface Temperature Time Series")
+```
+
+
+```{r}
+#library(ggplot2)
+
+#qplot() quickplot for simple plots
+qplot(data = data, Year, Median)
+
+#for a more complex visualisation use ggplot 
+ggplot(data = data, aes(Year, Median)) +
+geom_point()
+```
+
+```{r}
+#we use + to indicate layers first data second create geom points third connect with lines 
+
+ggplot(data = data, aes(Year, Median)) +
+geom_point() +
+geom_line()
+```
+
+```{r}
+#more colorful visualisation :
+ggplot(data = data, aes(Year, Median)) +
+geom_point(colour = "blue") +
+geom_line(colour = "red") +
+geom_hline(yintercept = 0, linetype = "dashed")
+
+```
+
+
+```{r}
+ggplot(data = data, aes(Year, Median)) +
+geom_point(colour = "blue", size = 2) +
+geom_line(colour = "blue", size = 1) +
+geom_hline(yintercept = 0, linetype = "dashed") +
+scale_x_continuous(breaks = c(1850, 1860, 1870, 1880, 1890, 1900, 1910, 1920, 1930, 1940,
+1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020)) +
+scale_y_continuous(breaks=c(-0.6, -0.3, 0, 0.3, 0.6)) +
+labs(title = "Global Sea Surface Temperature Time Series") +
+labs(y = "Median  sea-surface temperature anomaly
+(relative to 1961-1990)") +
+theme(panel.background = element_rect(fill = "ivory2")) +
+theme(plot.background = element_rect(fill = "ivory2"))
+```
+Interactive plots 
+```{r}
+#ggiraph package for interactive visualisation
+getwd()
+land <- read.csv(file = "GLB.Ts.csv")
+land
+land[2:19] <- NULL
+land
+```
+
+```{r}
+#ggiraph package for interactive visualisation
+getwd()
+land <- read.csv(file = "GLB.Ts.csv")
+land
+land[2:19] <- NULL
+land
+```
+
+
+```{r}
+library(tidyverse)
+
+library(plotly)
+combined <- merge(data, land, by = "Year")
+names(combined) <- c("Year", "Sea", "Land")
+View(combined)
+
+p <- ggplot(data= combined, aes(x = Year)) +
+geom_line(aes(y = Sea, colour = "Sea"), size = 1) +
+geom_line(aes(y = Land, colour = "Land"), size = 1) +
+scale_colour_manual("",
+breaks = c("Land", "Sea"),
+values = c("darkgreen", "blue")) +
+geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+labs(y = "Median sea & land temperature anomaly (relative to 1961-1990)") +
+scale_x_continuous(breaks = c(1880, 1890, 1900, 1910, 1920,
+1930, 1940, 1950, 1960, 1970,
+1980, 1990, 2000, 2010, 2018))+
+scale_y_continuous(breaks = c(-0.8, -0.6, -0.4, -0.2, 0, 0.2,
+0.4, 0.6, 0.8, 1, 1.2)) +
+theme(panel.background = element_rect(fill = "ivory2")) +
+theme(plot.background = element_rect(fill = "ivory2"))
+p
+ggplotly(p)
+```
+
+google vis
+
+```{r}
+library(googleVis)
+line <- gvisLineChart(t, options = list(title = "Global Temperature Time Series"))
+plot(line)
+```
+
