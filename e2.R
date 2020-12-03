@@ -4,7 +4,7 @@ library(raster)
 library(mapview)
 
 myspdf2 = readOGR(dsn=getwd(), layer='communes-20190101')
-new_co <- subset(myspdf2, myspdf2$insee %in% c("17180"))
+new_co <- subset(myspdf2, myspdf2$insee %in% c(""))
 
 leaflet(new_co) %>%
   addPolygons(color = "red",
