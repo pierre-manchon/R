@@ -5,8 +5,6 @@ library(ggiraph)
 
 ##########################################################
 
-setwd('./datasets/')
-
 #Data can be found in the following link
 #https://data.giss.nasa.gov/gistemp/
 #(Look for ‘Global Mean Estimates Based on Land-Surface Air Temperature Anomalies Only’ then ‘Global-mean monthly, seasonal, and annual means’
@@ -76,8 +74,3 @@ plot(line)
 #####to save #########
 
 print(line, file = "plot.htm")
-
-
-
-
-
