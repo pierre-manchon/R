@@ -1,0 +1,194 @@
+---
+title: "R DataViZ"
+output: html_notebook
+---
+
+The aim of the study is to analyse the statistical aspect of the forest fires that occurred in  Mediterranean area in France  region state, year wise over the period from 1973 to 2020 using various statistical analysis methods.
+The study will answer certain questions regarding the data acquired and emphasise on different techniques like constructing interactive maps  boxplots, histograms, hypothesis etc.
+from the Hypthesis : "Understanding the frequency of forest fires in a time series can help to take action to prevent them". Being able to pin-point where and when that frequency is most observed should give some clarity on what is the scope we are looking at.
+
+Download Data source is in :  https://www.promethee.com/incendies
+Download the data from year 1973 to 2020 
+save it in your workplace directory to know your current directory
+
+Commands for loading and installing  packages for data processing: 
+
+```{r}
+#install packages 
+install.packages('readr')
+install.packages('dplyr')
+install.packages('ggplot2')
+#Loading packages
+library(readr)
+library(dplyr)
+library(tidyverse) # for data transformation 
+library(ggplot2) # to plot beautiful graph
+```
+
+ To know the current directory : 
+
+```{r}
+getwd()
+#setwd("path")
+#Loading our dataset 
+#read_csv(): to read a comma (“,”) separated values
+#read_csv2(): to read a semicolon (“;”) separated values
+#read_tsv(): to read a tab separated (“\t”) values
+
+#as beginner sometimes we can choose the file to read interactively using choose() method
+my_data <- read.csv2(file.choose()) 
+#to know the name of headers  and structure use the following commands
+colnames(my_data)
+ncol(my_data)
+nrow(my_data)
+#to know the dimension of your data 
+dim(my_data)
+#View(my_data)
+str(my_data)
+summary(my_data)
+
+
+#Sometimes readr may guess the columns type incorrectly. To fix these problems you can use the additional arguments col_type() to specify the data type of each column.
+#link for different data type in R :http://www.sthda.com/english/wiki/easy-r-programming-basics#basic-data-types
+
+```
+
+We can specify from the loading moment the type of certain columns  such as the case with zero in left side in department the column should be in character type.
+
+
+```{r}
+fires_data<- read.csv2(file= "all_data.csv", colClasses = c(Département = "character",Code.INSEE = "character"))
+```
+
+Attention the data type of  Alerte  is not date its character have to transform it into date format.
+
+```{r}
+
+#If you need to change the data type for any column, use the following functions: 
+#as.character converts to a text string.
+#as.numeric converts to a number.
+#as.factor converts to a categorical variable.
+#as.integer converts to an integer
+#as.Date converts to a date
+#as.POSIXct convets to a full date and time."""
+
+fires_data$Alerte<- as.POSIXct(fires_data$Alerte)
+str(fires_data)
+```
+
+```{r}
+#Load libraries
+
+ # to handle dates in elegant way use lubridate library
+library(lubridate)
+
+#extract hours from column alerte and add in a separate column 
+
+Hours <- format(as.POSIXct(strptime(fires_data$Alerte,"%Y-%m-%d %H:%M:%S",tz="")) ,format = "%H:%M:%S")
+fires_data$Alerte_Hours <-Hours
+
+
+#extract only date add it as column
+Dates <- format(as.POSIXct(strptime(fires_data$Alerte,"%Y-%m-%d %H:%M:%S",tz="")) ,format = "%Y-%m-%d ")
+fires_data$Alerte_date <-Dates
+
+
+# some variables are currently character data, but we need to change them to dates. use as.Date() function from  lubridate package library
+str(fires_data)
+fires_data$Alerte_date <-as.Date(Dates)
+fires_data$year <- year(ymd(fires_data$Alerte_date))
+fires_data$month <- month(ymd(fires_data$Alerte_date))
+fires_data$day <- day(ymd(fires_data$Alerte_date))
+
+#to see the final data structure
+str(fires_data)
+```
+
+
+```{r}
+library(dplyr)
+#Extract year information from date column
+
+fires_data$ha2<- with(fires_data, ha2<-  Surface.parcourue..m2./10000)
+
+filteredata <- subset(fires_data, year >= 2000 & year <= 2020) 
+View(filteredata)
+```
+
+
+Visualizing Data Distributions
+Let’s begin by considering the first two questions we asked about the fire data:
+
+How large are fires by year?
+
+
+```{r}
+
+#fires_data <- fires_data %>%
+  #mutate(haa_cumulative = cumsum(ha2))
+```
+ “split-apply-combine” paradigm: split the data into groups, apply some analysis to each group and then combine the results.
+ **group_by()** to split the data into groups 
+ **summarize()** collapse each group into a single row summary by aggregating each group.
+ use n() for count each group ,  We can also apply many other functions to individual columns to get other summary statistics. For example, in the R base package we can use built-in functions like mean, median, min, and max.
+```{r}
+x <-filteredata %>%
+group_by(year) %>%
+  summarize(mean_size = mean(ha2))
+plot(x)
+```
+
+
+Use histogram to understand how data is distributed: 
+
+```{r}
+ggplot(data = filteredata) +
+  aes(x = ha2) +
+  geom_histogram(bins  = 30) +
+  theme_classic() +
+  scale_x_continuous(labels = scales::comma)
+```
+It's clear from this histogram that the data are highly skewed: That is, the vast majority of fires are smaller than a few thousand hectare
+
+
+
+When are fires most likely to occur? Are fires more common at certain times of the year?
+Since we have a month variable, we can visualize trends in fire occurrence and number of hectare burned by month. 
+```{r}
+month_summary_new <- filteredata %>%
+  group_by(month) %>%
+  summarize(fires = n())
+```
+Then, we'll create a bar chart to visualize the number of fires per month:
+```{r}
+ggplot(data = month_summary_new) +
+ aes(x = month, y = fires) + 
+ geom_bar(stat = "identity")+
+ theme_classic() +
+ scale_y_continuous(labels = scales::comma)
+```
+
+Conclusion: As the bar graph we created earlier made clear, wildfires are most common during the summer months and are usually rare during the winter.
+
+Has wildfire severity changed over time?
+To answer this question, we'll create a line graph of cumulative acres burned over time:
+```{r}
+
+filteredata <- filteredata %>%
+  mutate(ha_cumulative = cumsum(ha2))
+
+
+filteredata %>%
+  ggplot() +
+  aes(x = year, y = ha_cumulative) +
+  geom_line() +
+  theme_classic() +
+  scale_y_continuous(labels = scales::comma) +
+  ylab("Area Burned (cumulative)") +
+  xlab("date") +
+  ggtitle("Cumulative area Burned Since 2000")
+```
+
+
+
+
