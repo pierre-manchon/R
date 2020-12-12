@@ -1994,17 +1994,25 @@ View(filteredata)</code></pre>
 <p>How large are fires by year?</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jZmlyZXNfZGF0YSA8LSBmaXJlc19kYXRhICU+JVxuICAjbXV0YXRlKGhhYV9jdW11bGF0aXZlID0gY3Vtc3VtKGhhMikpXG5gYGAifQ== -->
+<pre class="r"><code>
+#fires_data &lt;- fires_data %&gt;%
+  #mutate(haa_cumulative = cumsum(ha2))</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>“split-apply-combine” paradigm: split the data into groups, apply some analysis to each group and then combine the results. <strong>group_by()</strong> to split the data into groups <strong>summarize()</strong> collapse each group into a single row summary by aggregating each group. use n() for count each group , We can also apply many other functions to individual columns to get other summary statistics. For example, in the R base package we can use built-in functions like mean, median, min, and max.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxueCA8LWZpbHRlcmVkYXRhICU+JVxuZ3JvdXBfYnkoeWVhcikgJT4lXG4gIHN1bW1hcml6ZShtZWFuX3NpemUgPSBtZWFuKGhhMikpXG5wbG90KHgpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxueCA8LWZpbHRlcmVkYXRhICU+JVxuZ3JvdXBfYnkoeWVhcikgJT4lXG4gIHN1bW1hcml6ZShtZWFuX3NpemUgPSBtZWFuKGhhMikpXG5gYGAifQ== -->
 <pre class="r"><code>x &lt;-filteredata %&gt;%
 group_by(year) %&gt;%
-  summarize(mean_size = mean(ha2))
-plot(x)</code></pre>
+  summarize(mean_size = mean(ha2))</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gc3VtbWFyaXplKC4sIG1lYW5fc2l6ZSA9IG1lYW4oaGEyKSkgOiBcbiAgaW1wb3NzaWJsZSBkZSB0cm91dmVyIGxhIGZvbmN0aW9uIFwic3VtbWFyaXplXCJcbiJ9 -->
+<pre><code>Error in summarize(., mean_size = mean(ha2)) : 
+  impossible de trouver la fonction &quot;summarize&quot;</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Use histogram to understand how data is distributed:</p>
@@ -2027,17 +2035,45 @@ plot(x)</code></pre>
 <p>When are fires most likely to occur? Are fires more common at certain times of the year? Since we have a month variable, we can visualize trends in fire occurrence and number of hectare burned by month.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9udGhfc3VtbWFyeV9uZXcgPC0gZmlsdGVyZWRhdGEgJT4lXG4gIGdyb3VwX2J5KG1vbnRoKSAlPiVcbiAgc3VtbWFyaXplKGZpcmVzID0gbigpKVxuYGBgIn0= -->
+<pre class="r"><code>month_summary_new &lt;- filteredata %&gt;%
+  group_by(month) %&gt;%
+  summarize(fires = n())</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Then, we’ll create a bar chart to visualize the number of fires per month:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2dwbG90KGRhdGEgPSBtb250aF9zdW1tYXJ5X25ldykgK1xuIGFlcyh4ID0gbW9udGgsIHkgPSBmaXJlcykgKyBcbiBnZW9tX2JhcihzdGF0ID0gXCJpZGVudGl0eVwiKStcbiB0aGVtZV9jbGFzc2ljKCkgK1xuIHNjYWxlX3lfY29udGludW91cyhsYWJlbHMgPSBzY2FsZXM6OmNvbW1hKVxuYGBgIn0= -->
+<pre class="r"><code>ggplot(data = month_summary_new) +
+ aes(x = month, y = fires) + 
+ geom_bar(stat = &quot;identity&quot;)+
+ theme_classic() +
+ scale_y_continuous(labels = scales::comma)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Conclusion: As the bar graph we created earlier made clear, wildfires are most common during the summer months and are usually rare during the winter.</p>
 <p>Has wildfire severity changed over time? To answer this question, we’ll create a line graph of cumulative acres burned over time:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5maWx0ZXJlZGF0YSA8LSBmaWx0ZXJlZGF0YSAlPiVcbiAgbXV0YXRlKGhhX2N1bXVsYXRpdmUgPSBjdW1zdW0oaGEyKSlcblxuXG5maWx0ZXJlZGF0YSAlPiVcbiAgZ2dwbG90KCkgK1xuICBhZXMoeCA9IHllYXIsIHkgPSBoYV9jdW11bGF0aXZlKSArXG4gIGdlb21fbGluZSgpICtcbiAgdGhlbWVfY2xhc3NpYygpICtcbiAgc2NhbGVfeV9jb250aW51b3VzKGxhYmVscyA9IHNjYWxlczo6Y29tbWEpICtcbiAgeWxhYihcIkFyZWEgQnVybmVkIChjdW11bGF0aXZlKVwiKSArXG4gIHhsYWIoXCJkYXRlXCIpICtcbiAgZ2d0aXRsZShcIkN1bXVsYXRpdmUgYXJlYSBCdXJuZWQgU2luY2UgMjAwMFwiKVxuYGBgIn0= -->
+<pre class="r"><code>
+filteredata &lt;- filteredata %&gt;%
+  mutate(ha_cumulative = cumsum(ha2))
+
+
+filteredata %&gt;%
+  ggplot() +
+  aes(x = year, y = ha_cumulative) +
+  geom_line() +
+  theme_classic() +
+  scale_y_continuous(labels = scales::comma) +
+  ylab(&quot;Area Burned (cumulative)&quot;) +
+  xlab(&quot;date&quot;) +
+  ggtitle(&quot;Cumulative area Burned Since 2000&quot;)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
