@@ -3,6 +3,9 @@ library(leaflet)
 library(raster)
 library(mapview)
 
+getwd()
+setwd("./datasets/")
+
 myspdf2 = readOGR(dsn=getwd(), layer='communes-20190101')
 new_co <- subset(myspdf2, myspdf2$insee %in% c(""))
 
