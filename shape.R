@@ -1,5 +1,4 @@
 ################ spplot
-setwd("/cloud/project/TP2/countries_shp")
 getwd()
 library(raster)
 library(rgeos)
