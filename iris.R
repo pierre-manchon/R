@@ -1,3 +1,5 @@
+library(ggplot2)
+
 hadsst <- read.table('./datasets/HadSST.3.1.1.0_annual_globe_ts.txt')
 # read.csv(file='HadSST.3.1.1.0_annual_globe_ts.csv')
 iris <- read.delim('./datasets/Iris.txt', sep=";")
